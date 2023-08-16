@@ -1,6 +1,7 @@
 const config = require("../config/db-config");
 
 const Sequelize = require("sequelize");
+
 const sequelize = new Sequelize(
     config.DB,
     config.USER,
@@ -26,15 +27,12 @@ db.user = require("../models/user")(sequelize, Sequelize);
 db.role = require("../models/role")(sequelize, Sequelize);
 db.product = require("../models/product")(sequelize, Sequelize);
 db.category = require("../models/Categories")(sequelize, Sequelize);
+db.cart = require("../models/Cart")(sequelize, Sequelize);
+db.quality = require("../models/Quality")(sequelize, Sequelize);
 
-db.category.hasMany(db.product, { as: "categories" }); // One Category has many product
-
-
-// db.product.belongsTo(db.category, {
-//   foreignKey: "productid",
-//   as: "product",
-// });
-
+//One To Many
+db.category.hasMany(db.product, { foreignKey: 'category_id' });
+db.product.belongsTo(db.category);
 
 //Many to Many
 db.role.belongsToMany(db.user, {
@@ -44,6 +42,41 @@ db.role.belongsToMany(db.user, {
 db.user.belongsToMany(db.role, {
     through: "user_roles"
 });
+
+// Association between User and Cart
+db.user.hasMany(db.cart, {
+    foreignKey: 'user_id' // Make sure this matches your database column name
+});
+db.cart.belongsTo(db.user);
+
+//Many To Many
+db.cart.belongsToMany(db.product, {
+    through: {
+        model: 'carts_product',
+        unique: false, // Adjust this based on your needs
+        // Add any other options you need for the association
+    },
+    as: 'products',
+    foreignKey: 'cart_id',
+    otherKey: 'product_id',
+});
+
+db.product.belongsToMany(db.cart, {
+    through: {
+        model: 'carts_product',
+        unique: false
+    },
+    as: 'carts',
+    foreignKey: 'product_id',
+    otherKey: 'cart_id',
+});
+
+// Association between User and Cart
+db.cart.hasMany(db.quality, {
+    foreignKey: 'cart_id' // Make sure this matches your database column name
+});
+db.quality.belongsTo(db.cart);
+
 
 db.ROLES = ["user", "admin", "sales"];
 

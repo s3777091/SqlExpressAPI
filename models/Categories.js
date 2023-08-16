@@ -1,25 +1,24 @@
-module.exports = (sequelize, Sequelize) => {
-    const Categories = sequelize.define("categories", {
+const {DataTypes} = require("sequelize");
+module.exports = (sequelize) => {
+    return sequelize.define("categories", {
         id: {
-            type: Sequelize.INTEGER,
+            type: DataTypes.INTEGER,
             primaryKey: true
         },
         image: {
-            type: Sequelize.STRING
+            type: DataTypes.STRING
         },
         name: {
-            type: Sequelize.STRING
+            type: DataTypes.STRING
         },
         slug: {
-            type: Sequelize.STRING
+            type: DataTypes.STRING
         },
         code: {
-            type: Sequelize.STRING
+            type: DataTypes.STRING
         },
         link: {
-            type: Sequelize.STRING
+            type: DataTypes.STRING
         }
     });
-
-    return Categories;
 };

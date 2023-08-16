@@ -6,8 +6,6 @@ const User = db.user;
 verifyToken = (req, res, next) => {
     let token = req.session.token;
 
-    // console.log(token);
-
     if (!token) {
         return res.status(403).send({
             message: "No token provided!",

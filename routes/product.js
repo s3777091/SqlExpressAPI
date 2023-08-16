@@ -1,5 +1,6 @@
 const { authJwt } = require("../Middleware");
 const controller = require("../controller/product-controller");
+const CartController = require("../controller/payment-controller");
 
 module.exports = function (app) {
     app.use(function (req, res, next) {
@@ -10,15 +11,12 @@ module.exports = function (app) {
         next();
     });
 
-    app.post(
-        "/api/add/product",
-        [authJwt.verifyToken, authJwt.isAdmin],
-        controller.createProduct
-    );
+    app.post("/api/add/product", [authJwt.verifyToken, authJwt.isAdmin], controller.createProduct);
 
-    app.get(
-        "/api/view/product",
-        controller.viewProduct
-    );
+    app.get("/api/view/product", controller.viewProduct);
+
+    app.post("/api/add/product_to_cart", [authJwt.verifyToken], CartController.addCart);
+
+    app.get("/api/view/cart", [authJwt.verifyToken], CartController.viewProductsInCart);
 
 };

@@ -71,11 +71,13 @@ exports.signin = async (req, res) => {
 
         let authorities = [];
         const roles = await user.getRoles();
+
         for (let i = 0; i < roles.length; i++) {
             authorities.push("ROLE_" + roles[i].name.toUpperCase());
         }
 
         req.session.token = token;
+
 
         return res.status(200).send({
             id: user.id,
@@ -87,6 +89,31 @@ exports.signin = async (req, res) => {
         return res.status(500).send({ message: error.message });
     }
 };
+
+exports.getUserInformation = async (req, res) => {
+    try {
+        const decoded = jwt.verify(req.session.token, config.secret);
+        const user = await User.findByPk(decoded.id);
+
+        if (!user) {
+            return res.status(401).send({
+                message: "User not found!",
+            });
+        }
+
+        const userRoles = await user.getRoles();
+
+        return res.status(200).send({
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            roles: userRoles.map(role => role.name)
+        });
+    } catch (error) {
+        return res.status(500).send({ message: error.message });
+    }
+};
+
 
 exports.signout = async (req, res) => {
     try {
