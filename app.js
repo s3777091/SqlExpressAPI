@@ -53,6 +53,7 @@ require("./routes/auth")(app);
 require("./routes/users")(app);
 require("./routes/product")(app);
 require("./routes/sales")(app);
+require("./routes/Home")(app);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;
@@ -60,33 +61,34 @@ app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.\n`);
 });
 
-function initial() {
-  Role.create({
-    id: 1,
-    name: "user",
-  });
+async function initial() {
+    const transaction = await db.sequelize.transaction(); // Start a transaction
 
-  Role.create({
-    id: 2,
-    name: "sales",
-  });
+    try {
+        // Create roles
+        await Role.bulkCreate([
+            {id: 1, name: "user"},
+            {id: 2, name: "sales"},
+            {id: 3, name: "admin"}
+        ], {transaction});
 
-  Role.create({
-    id: 3,
-    name: "admin",
-  });
+        // Create category
+        await Category.create({
+            id: 1,
+            image: "https://salt.tikicdn.com/ts/category/54/c0/ff/fe98a4afa2d3e5142dc8096addc4e40b.png",
+            name: "Điện Thoại - Máy Tính Bảng",
+            slug: "dien-thoai-may-tinh-bang",
+            code: "1789",
+            link: "https://tiki.vn/dien-thoai-may-tinh-bang/c1789"
+        }, {transaction});
 
-  Category.create({
-    id: 1,
-    image: "https://salt.tikicdn.com/ts/category/54/c0/ff/fe98a4afa2d3e5142dc8096addc4e40b.png",
-    name: "Điện Thoại - Máy Tính Bảng",
-    slug: "dien-thoai-may-tinh-bang",
-    code: "1789",
-    link: "https://tiki.vn/dien-thoai-may-tinh-bang/c1789"
-  })
+        await transaction.commit(); // Commit the transaction
 
-
-
+        console.log("Roles and category created successfully.");
+    } catch (error) {
+        await transaction.rollback(); // Rollback the transaction on error
+        console.log(error.message);
+    }
 }
 
 // database
@@ -97,21 +99,21 @@ const Role = db.role;
 // force: true will drop the table if it already exists
 // db.sequelize.sync();
 
-// db.sequelize.sync({force: true}).then(() => {
-//   console.log('Drop and Resync Database with { force: true }');
-//   initial();
-// });
-
-
-db.sequelize.sync().then(async () => {
-  const categoriesCount = await db.category.count();
-  const roles = await db.role.count();
-
-  if (categoriesCount === 0 || roles === 0) {
-      // If there are no categories, run the initial function to populate the database
-      console.log('Running initial()...');
-      initial(); // Call your initial() function here
-  } else {
-      console.log('Database has already been initialized.');
-  }
+db.sequelize.sync({force: true}).then(async () => {
+    console.log('Drop and Resync Database with { force: true }');
+    await initial();
 });
+
+
+// db.sequelize.sync().then(async () => {
+//   const categoriesCount = await db.category.count();
+//   const roles = await db.role.count();
+//
+//   if (categoriesCount === 0 || roles === 0) {
+//       // If there are no categories, run the initial function to populate the database
+//       console.log('Running initial()...');
+//       await initial(); // Call your initial() function here
+//   } else {
+//       console.log('Database has already been initialized.');
+//   }
+// });

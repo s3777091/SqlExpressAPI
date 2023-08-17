@@ -12,7 +12,10 @@ module.exports = (sequelize) => {
         },
         status: {
             type: DataTypes.STRING,
-            defaultValue: 'on-going'
+            defaultValue: 'on-going',
+            indexes: [{
+                fields: ['status_quality_idx']
+            }]
         },
         product_image:{
             type: DataTypes.STRING(1024)

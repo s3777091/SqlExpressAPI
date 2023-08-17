@@ -5,13 +5,16 @@ module.exports = (sequelize) => {
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
-            autoIncrement: true
+            autoIncrement: true,
         },
         prname: {
-            type: DataTypes.STRING(1024)
+            type: DataTypes.STRING(1024),
+            indexes: [{
+                fields: ['product_name_idx']
+            }]
         },
         prId: {
-            type: DataTypes.STRING
+            type: DataTypes.STRING,
         },
         prLink: {
             type: DataTypes.STRING(1024)

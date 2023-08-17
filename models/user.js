@@ -4,6 +4,9 @@ module.exports = (sequelize) => {
         username: {
             type: DataTypes.STRING,
             allowNull: false,
+            indexes: [{
+                fields: ['user_name_idx']
+            }]
         },
         email: {
             type: DataTypes.STRING,

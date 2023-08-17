@@ -55,9 +55,6 @@ exports.sign_up = async (req, res) => {
     }
 };
 
-
-
-
 exports.sign_in = async (req, res) => {
     const transaction = await db.sequelize.transaction(); // Start a transaction
     try {
@@ -116,7 +113,6 @@ exports.sign_in = async (req, res) => {
     }
 };
 
-
 exports.getUserInformation = async (req, res) => {
     try {
         const decoded = jwt.verify(req.session.token, config.secret);
@@ -140,7 +136,6 @@ exports.getUserInformation = async (req, res) => {
         return res.status(500).send({ message: error.message });
     }
 };
-
 
 exports.sign_out = async (req, res) => {
     try {

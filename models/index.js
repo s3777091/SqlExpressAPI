@@ -31,7 +31,8 @@ db.cart = require("../models/Cart")(sequelize, Sequelize);
 db.quality = require("../models/Quality")(sequelize, Sequelize);
 db.discount = require("../models/Discount")(sequelize, Sequelize);
 
-
+//This table on have code of tracking id
+db.admin = require("../models/Admin")(sequelize, Sequelize);
 
 
 //One To Many
@@ -82,7 +83,6 @@ db.cart.hasMany(db.quality, {
     as: 'cart_quality'
 });
 db.quality.belongsTo(db.cart);
-
 
 // Association between User and Cart
 db.user.hasMany(db.discount, {

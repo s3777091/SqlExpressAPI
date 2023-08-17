@@ -13,7 +13,10 @@ module.exports = function (app) {
 
     app.post("/api/add/product", [authJwt.verifyToken, authJwt.isAdmin], controller.createProduct);
 
+
     app.get("/api/view/product", controller.viewProduct);
+
+    app.get("/api/view/comment", controller.viewComment);
 
     app.post("/api/add/product_to_cart", [authJwt.verifyToken], CartController.addCart);
 

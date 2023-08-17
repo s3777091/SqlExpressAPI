@@ -16,7 +16,10 @@ module.exports = (sequelize) => {
         },
         status: {
             type: DataTypes.STRING,
-            defaultValue: 'on-going' // You can set a default status for the cart
+            defaultValue: 'on-going',
+            indexes: [{
+                fields: ['status_cart_idx']
+            }]
         },
     });
 };

@@ -11,7 +11,7 @@ module.exports = function(app) {
     });
 
 
-
     app.post("/api/view/cart", [authJwt.verifyToken, authJwt.isSales], sales.viewCartByStatusAndName);
 
+    app.get("/api/view/history", [authJwt.verifyToken], sales.viewHistoryCart);
 };

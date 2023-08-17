@@ -2,13 +2,18 @@ const db = require("../models");
 const jwt = require("jsonwebtoken");
 const config = require("../config/auth-config");
 
-
 //Start database model
 const User = db.user;
 const Product = db.product;
 const Cart = db.cart;
 const Quality = db.quality;
 const discount = db.discount;
+
+function calculateTotalBill(qualities) {
+    return qualities.reduce((totalBill, quality) => {
+        return totalBill + quality.product_cost * quality.quality;
+    }, 0);
+}
 
 exports.addCart = async (req, res) => {
     const productId = req.body.idProduct; // Product ID
@@ -115,11 +120,7 @@ exports.viewProductsInCart = async (req, res) => {
             transaction,
         });
 
-        let totalBill = 0;
-
-        qualities.forEach(quality => {
-            totalBill += quality.product_cost * quality.quality;
-        });
+        const totalBill = calculateTotalBill(qualities);
 
         await transaction.commit(); // Commit the transaction
 
@@ -242,11 +243,7 @@ exports.OnPayment = async (req, res) => {
             transaction,
         });
 
-        let totalBill = 0;
-
-        qualities.forEach(quality => {
-            totalBill += quality.product_cost * quality.quality;
-        });
+        let totalBill = calculateTotalBill(qualities);
 
         let discountValue = 0;
         if (ActiveCoupon) {
@@ -301,5 +298,3 @@ exports.OnPayment = async (req, res) => {
         return res.status(500).send({ message: error.message });
     }
 };
-
-

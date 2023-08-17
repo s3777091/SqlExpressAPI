@@ -33,4 +33,5 @@ module.exports = function(app) {
   );
 
   app.get("/api/user/information", authJwt.verifyToken, user.getUserInformation);
+
 };
