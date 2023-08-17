@@ -19,4 +19,7 @@ module.exports = function (app) {
 
     app.get("/api/view/cart", [authJwt.verifyToken], CartController.viewProductsInCart);
 
+    app.post("/api/delete/product_from_cart", [authJwt.verifyToken], CartController.deleteProductFromCart);
+
+    app.post("/api/payment", [authJwt.verifyToken], CartController.OnPayment);
 };

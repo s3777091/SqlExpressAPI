@@ -29,9 +29,13 @@ db.product = require("../models/product")(sequelize, Sequelize);
 db.category = require("../models/Categories")(sequelize, Sequelize);
 db.cart = require("../models/Cart")(sequelize, Sequelize);
 db.quality = require("../models/Quality")(sequelize, Sequelize);
+db.discount = require("../models/Discount")(sequelize, Sequelize);
+
+
+
 
 //One To Many
-db.category.hasMany(db.product, { foreignKey: 'category_id' });
+db.category.hasMany(db.product, { foreignKey: 'category_id', as: 'categoryProduct' });
 db.product.belongsTo(db.category);
 
 //Many to Many
@@ -45,7 +49,8 @@ db.user.belongsToMany(db.role, {
 
 // Association between User and Cart
 db.user.hasMany(db.cart, {
-    foreignKey: 'user_id' // Make sure this matches your database column name
+    foreignKey: 'user_id', // Make sure this matches your database column name
+    as: 'user_carts'
 });
 db.cart.belongsTo(db.user);
 
@@ -73,10 +78,18 @@ db.product.belongsToMany(db.cart, {
 
 // Association between User and Cart
 db.cart.hasMany(db.quality, {
-    foreignKey: 'cart_id' // Make sure this matches your database column name
+    foreignKey: 'cart_id', // Make sure this matches your database column name
+    as: 'cart_quality'
 });
 db.quality.belongsTo(db.cart);
 
+
+// Association between User and Cart
+db.user.hasMany(db.discount, {
+    foreignKey: 'discount_id', // Make sure this matches your database column name
+    as: 'user_discount'
+});
+db.discount.belongsTo(db.user);
 
 db.ROLES = ["user", "admin", "sales"];
 

@@ -3,50 +3,69 @@ const config = require("../config/auth-config");
 const User = db.user;
 const Role = db.role;
 
+const Coupon = db.discount;
+
 const Op = db.Sequelize.Op;
 
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
+
 exports.signup = async (req, res) => {
-    // Save User to Database
+    const transaction = await db.sequelize.transaction(); // Start a transaction
     try {
         const user = await User.create({
             username: req.body.username,
             email: req.body.email,
             password: bcrypt.hashSync(req.body.password, 8),
+        }, { transaction });
+
+        const couponCodes = ['Welcome', 'Vip777', 'Vip999'];
+        const discountValue = 0.2; // 20% discount
+
+        // Create three new coupons with the generated codes and assign them to the user
+        for (const code of couponCodes) {
+            await Coupon.create({
+                code: code,
+                value: discountValue, // Set the discount value
+                userId: user.id, // Assign the coupon to the newly created user
+            }, { transaction });
+        }
+
+        const rolesToSet = req.body.roles ? req.body.roles : [1];
+        const roles = await Role.findAll({
+            where: {
+                name: {
+                    [Op.or]: rolesToSet,
+                },
+            },
+            transaction,
         });
 
-        if (req.body.roles) {
-            const roles = await Role.findAll({
-                where: {
-                    name: {
-                        [Op.or]: req.body.roles,
-                    },
-                },
-            });
-
-            const result = user.setRoles(roles);
-            if (result) res.send({ message: "User registered successfully!" });
-        } else {
-            // user has role = 1
-            const result = user.setRoles([1]);
-            if (result) res.send({ message: "User registered successfully!" });
+        const result = await user.setRoles(roles, { transaction });
+        if (result) {
+            await transaction.commit(); // Commit the transaction
+            res.send({ message: "User registered successfully!" });
         }
     } catch (error) {
+        await transaction.rollback(); // Rollback the transaction on error
         res.status(500).send({ message: error.message });
     }
 };
 
+
 exports.signin = async (req, res) => {
+    const transaction = await db.sequelize.transaction(); // Start a transaction
     try {
         const user = await User.findOne({
             where: {
                 username: req.body.username,
             },
+            transaction,
         });
 
         if (!user) {
+            await transaction.rollback(); // Rollback the transaction
             return res.status(404).send({ message: "User Not found." });
         }
 
@@ -56,6 +75,7 @@ exports.signin = async (req, res) => {
         );
 
         if (!passwordIsValid) {
+            await transaction.rollback(); // Rollback the transaction
             return res.status(401).send({
                 message: "Invalid Password!",
             });
@@ -70,7 +90,7 @@ exports.signin = async (req, res) => {
             });
 
         let authorities = [];
-        const roles = await user.getRoles();
+        const roles = await user.getRoles({ transaction });
 
         for (let i = 0; i < roles.length; i++) {
             authorities.push("ROLE_" + roles[i].name.toUpperCase());
@@ -78,6 +98,7 @@ exports.signin = async (req, res) => {
 
         req.session.token = token;
 
+        await transaction.commit(); // Commit the transaction
 
         return res.status(200).send({
             id: user.id,
@@ -86,9 +107,11 @@ exports.signin = async (req, res) => {
             roles: authorities,
         });
     } catch (error) {
+        await transaction.rollback(); // Rollback the transaction on error
         return res.status(500).send({ message: error.message });
     }
 };
+
 
 exports.getUserInformation = async (req, res) => {
     try {

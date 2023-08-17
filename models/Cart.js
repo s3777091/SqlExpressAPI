@@ -18,6 +18,5 @@ module.exports = (sequelize) => {
             type: DataTypes.STRING,
             defaultValue: 'on-going' // You can set a default status for the cart
         },
-
     });
 };

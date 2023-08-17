@@ -11,7 +11,7 @@ require("dotenv").config();
 
 exports.createProduct = async (req, res) => {
     try {
-        const idCode = req.body.code; //code
+        const idCode = req.body.code;
         const page = req.body.page;
 
         const category = await Category.findOne({
@@ -21,14 +21,13 @@ exports.createProduct = async (req, res) => {
         });
 
         if (!category) {
-            return res.status(404).send({ message: "category Not found." });
+            return res.status(404).send({ message: "Category not found." });
         }
 
-        let $ = await fetch(
+        const response = await fetch(
             `${process.env.TIKI_SLUG}?limit=40&aggregations=2&version=home-persionalized&trackity_id=${process.env.TOKEN}&category=${category.code}&page=${page}&urlKey=${category.slug}`,
             {
                 method: "GET",
-                contentType: "application/json",
                 headers: {
                     Accept: "application/json",
                     "Content-Type": "application/json",
@@ -37,57 +36,44 @@ exports.createProduct = async (req, res) => {
             }
         );
 
-        const data = await $.json();
+        const data = await response.json();
         const list = data.data;
 
-        const promises = list.map(async (ne) => {
-            const existingProduct = await Pduct.findOne({
+        const addedProducts = await Promise.all(list.map(async (ne) => {
+            const [existingProduct, created] = await Pduct.findOrCreate({
                 where: {
                     prname: ne.name,
                     cost: ne.price,
                     categoryId: category.id
-                }
-            });
-
-            if (!existingProduct) {
-                await Pduct.create({
-                    prname: ne.name,
+                },
+                defaults: {
                     prId: ne.id,
                     prLink: ne.url_path,
-                    cost: ne.price,
                     image: ne.thumbnail_url,
                     rate: ne.rating_average,
                     discount: ne.discount,
                     categoryId: category.id
-                });
-                return {
-                    name: ne.name,
-                    added: true
-                };
-            } else {
-                return {
-                    name: ne.name,
-                    added: false
-                };
-            }
-        });
+                }
+            });
 
-        const results = await Promise.all(promises);
+            return {
+                name: ne.name,
+                added: created
+            };
+        }));
 
-        // Count how many products were added
-        const addedProductsCount = results.filter(result => result.added).length;
+        const addedProductsCount = addedProducts.filter(result => result.added).length;
 
-        if (addedProductsCount > 0) {
-            return res.status(200).send(`Added ${addedProductsCount} new products to category ${category.name}`);
-        } else {
-            return res.status(200).send(`No new products added to category ${category.name}`);
-        }
-
-
+        return res.status(200).send(
+            addedProductsCount > 0
+                ? `Added ${addedProductsCount} new products to category ${category.name}`
+                : `No new products added to category ${category.name}`
+        );
     } catch (error) {
         res.status(500).send({ message: error.message });
     }
 };
+
 
 exports.viewProduct = async (req, res) => {
     try {
@@ -99,11 +85,11 @@ exports.viewProduct = async (req, res) => {
         });
 
         const spidValue = extractSpid(product.prLink);
-    
-        let $ = await fetch(
-            `${process.env.TIKI_DETAIL}/${product.prId}?platform=web&spid=${spidValue}`,{
+
+        const response = await fetch(
+            `${process.env.TIKI_DETAIL}/${product.prId}?platform=web&spid=${spidValue}`,
+            {
                 method: "GET",
-                contentType: "application/json",
                 headers: {
                     Accept: "application/json",
                     "Content-Type": "application/json",
@@ -111,8 +97,9 @@ exports.viewProduct = async (req, res) => {
                 },
             }
         );
-        const data = await $.json();
-        return res.status(200).send({
+
+        const data = await response.json();
+        const productInfo = {
             name: data.name,
             image: data.thumbnail_url,
             listImage: data.images,
@@ -122,8 +109,9 @@ exports.viewProduct = async (req, res) => {
             options: data.configurable_options,
             description: data.description,
             short_description: data.short_description,
-        });
+        };
 
+        return res.status(200).send(productInfo);
     } catch (error) {
         res.status(500).send({ message: error.message });
     }

@@ -10,6 +10,13 @@ module.exports = (sequelize) => {
         productID: {
             type: DataTypes.STRING
         },
+        status: {
+            type: DataTypes.STRING,
+            defaultValue: 'on-going'
+        },
+        product_image:{
+            type: DataTypes.STRING(1024)
+        },
         product_name: {
             type: DataTypes.STRING
         },
