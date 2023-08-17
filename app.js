@@ -52,6 +52,7 @@ app.get("/", (req, res) => {
 require("./routes/auth")(app);
 require("./routes/users")(app);
 require("./routes/product")(app);
+require("./routes/sales")(app);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;
@@ -96,21 +97,21 @@ const Role = db.role;
 // force: true will drop the table if it already exists
 // db.sequelize.sync();
 
-db.sequelize.sync({force: true}).then(() => {
-  console.log('Drop and Resync Database with { force: true }');
-  initial();
-});
-
-
-// db.sequelize.sync().then(async () => {
-//   const categoriesCount = await db.category.count();
-//   const roles = await db.role.count();
-//
-//   if (categoriesCount === 0 || roles === 0) {
-//       // If there are no categories, run the initial function to populate the database
-//       console.log('Running initial()...');
-//       initial(); // Call your initial() function here
-//   } else {
-//       console.log('Database has already been initialized.');
-//   }
+// db.sequelize.sync({force: true}).then(() => {
+//   console.log('Drop and Resync Database with { force: true }');
+//   initial();
 // });
+
+
+db.sequelize.sync().then(async () => {
+  const categoriesCount = await db.category.count();
+  const roles = await db.role.count();
+
+  if (categoriesCount === 0 || roles === 0) {
+      // If there are no categories, run the initial function to populate the database
+      console.log('Running initial()...');
+      initial(); // Call your initial() function here
+  } else {
+      console.log('Database has already been initialized.');
+  }
+});

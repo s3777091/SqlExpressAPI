@@ -74,7 +74,6 @@ exports.createProduct = async (req, res) => {
     }
 };
 
-
 exports.viewProduct = async (req, res) => {
     try {
         const productCode = req.query.prId;

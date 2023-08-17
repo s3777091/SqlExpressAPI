@@ -13,3 +13,6 @@ exports.adminBoard = (req, res) => {
 exports.salesBoard = (req, res) => {
     res.status(200).send("Sales Content.");
 };
+
+//Send Add Money Request;
+

@@ -5,7 +5,6 @@ module.exports = (sequelize) => {
         code: {
             type: DataTypes.STRING,
             allowNull: false,
-            unique: true,
         },
         value: {
             type: DataTypes.DOUBLE,

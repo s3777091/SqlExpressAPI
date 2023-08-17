@@ -23,12 +23,7 @@ module.exports = (sequelize) => {
         password: {
             type: DataTypes.STRING,
             allowNull: false,
-        },
-        discountId: {
-            type: DataTypes.INTEGER,
-            allowNull: true,
-            unique: true,
-        },
+        }
 
     });
 };

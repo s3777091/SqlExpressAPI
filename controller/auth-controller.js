@@ -11,10 +11,10 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
 
-exports.signup = async (req, res) => {
+exports.sign_up = async (req, res) => {
     const transaction = await db.sequelize.transaction(); // Start a transaction
     try {
-        const user = await User.create({
+        const user = await db.user.create({
             username: req.body.username,
             email: req.body.email,
             password: bcrypt.hashSync(req.body.password, 8),
@@ -23,14 +23,16 @@ exports.signup = async (req, res) => {
         const couponCodes = ['Welcome', 'Vip777', 'Vip999'];
         const discountValue = 0.2; // 20% discount
 
-        // Create three new coupons with the generated codes and assign them to the user
-        for (const code of couponCodes) {
-            await Coupon.create({
+        // Create the user's discounts
+        const discountPromises = couponCodes.map(code => {
+            return Coupon.create({
                 code: code,
-                value: discountValue, // Set the discount value
-                userId: user.id, // Assign the coupon to the newly created user
+                userId: user.id,
+                value: discountValue,
             }, { transaction });
-        }
+        });
+
+        await Promise.all(discountPromises);
 
         const rolesToSet = req.body.roles ? req.body.roles : [1];
         const roles = await Role.findAll({
@@ -54,7 +56,9 @@ exports.signup = async (req, res) => {
 };
 
 
-exports.signin = async (req, res) => {
+
+
+exports.sign_in = async (req, res) => {
     const transaction = await db.sequelize.transaction(); // Start a transaction
     try {
         const user = await User.findOne({
@@ -138,7 +142,7 @@ exports.getUserInformation = async (req, res) => {
 };
 
 
-exports.signout = async (req, res) => {
+exports.sign_out = async (req, res) => {
     try {
         req.session = null;
         return res.status(200).send({
