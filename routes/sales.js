@@ -1,6 +1,7 @@
 const {authJwt} = require("../Middleware");
 
-const sales = require("../controller/sales-controller");
+const seller = require("../controller/seller-controller");
+
 module.exports = function(app) {
     app.use(function(req, res, next) {
         res.header(
@@ -11,7 +12,7 @@ module.exports = function(app) {
     });
 
 
-    app.post("/api/view/cart", [authJwt.verifyToken, authJwt.isSales], sales.viewCartByStatusAndName);
+    app.post("/api/view/cart", [authJwt.verifyToken], seller.viewCartByStatusAndName);
 
-    app.get("/api/view/history", [authJwt.verifyToken], sales.viewHistoryCart);
+    app.post("/api/view/history", [authJwt.verifyToken], seller.viewHistoryCart);
 };

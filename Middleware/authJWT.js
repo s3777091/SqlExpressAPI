@@ -52,17 +52,17 @@ isSales = async (req, res, next) => {
         const roles = await user.getRoles();
 
         for (let i = 0; i < roles.length; i++) {
-            if (roles[i].name === "sales") {
+            if (roles[i].name === "seller") {
                 return next();
             }
         }
 
         return res.status(403).send({
-            message: "Require sales Role!",
+            message: "Require seller Role!",
         });
     } catch (error) {
         return res.status(500).send({
-            message: "Unable to validate sales role!",
+            message: "Unable to validate seller role!",
         });
     }
 };
@@ -73,7 +73,7 @@ isSalesOrAdmin = async (req, res, next) => {
         const roles = await user.getRoles();
 
         for (let i = 0; i < roles.length; i++) {
-            if (roles[i].name === "sales") {
+            if (roles[i].name === "seller") {
                 return next();
             }
 
@@ -83,11 +83,11 @@ isSalesOrAdmin = async (req, res, next) => {
         }
 
         return res.status(403).send({
-            message: "Require sales or Admin Role!",
+            message: "Require seller or Admin Role!",
         });
     } catch (error) {
         return res.status(500).send({
-            message: "Unable to validate Sales or Admin role!",
+            message: "Unable to validate seller or Admin role!",
         });
     }
 };

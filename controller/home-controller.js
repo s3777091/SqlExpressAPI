@@ -4,6 +4,9 @@ const Product = db.product;
 const Category = db.category;
 const Admin = db.admin;
 
+require("dotenv").config();
+
+
 //View Product by category;
 exports.viewProductByCategory = async (req, res) => {
     const transaction = await db.sequelize.transaction();
@@ -36,7 +39,7 @@ exports.viewProductByCategory = async (req, res) => {
             where: {
                 categoryId: category.id
             },
-            attributes: ['prname', 'prId', 'prLink', 'image', 'cost', 'discount', 'rate'],
+            attributes: ['prName', 'prId', 'prLink', 'image', 'cost'],
             raw: true,
             offset: parseInt(offset),
             limit: limit,
@@ -77,7 +80,7 @@ exports.addCode = async (req, res) => {
                 code: req.body.code,
             },
             defaults: {
-                link: 'https://www.youtube.com/watch?v=ECxVfrwwTp0' // Specify the code you want to add
+                link:  process.env.VIDEO
             }
         });
         if (!created) {
@@ -90,5 +93,10 @@ exports.addCode = async (req, res) => {
     }
 };
 
-
-
+exports.topSelling = async (req, res) => {
+    try {
+        return res.status(200).send({ message: "Top seller." });
+    } catch (error) {
+        res.status(500).send({ message: error.message });
+    }
+}

@@ -3,17 +3,11 @@ const db = require("../models");
 const {Transaction} = require('sequelize');
 const jwt = require("jsonwebtoken");
 const config = require("../config/auth-config");
-// Start database model
+
+
 const User = db.user;
 const Cart = db.cart;
 const Quality = db.quality;
-const discount = db.discount;
-
-function calculateTotalBill(qualities) {
-    return qualities.reduce((totalBill, quality) => {
-        return totalBill + quality.product_cost * quality.quality;
-    }, 0);
-}
 
 exports.viewCartByStatusAndName = async (req, res) => {
     const transaction = await db.sequelize.transaction({
@@ -47,7 +41,7 @@ exports.viewCartByStatusAndName = async (req, res) => {
             if (filter) {
                 carts = await Cart.findAll({
                     where: {
-                        user_id: user.id,
+                        userId: user.id,
                         status: filter,
                     },
                     transaction,
@@ -55,7 +49,7 @@ exports.viewCartByStatusAndName = async (req, res) => {
             } else {
                 carts = await Cart.findAll({
                     where: {
-                        user_id: user.id,
+                        userId: user.id,
                     },
                     transaction,
                 });
@@ -67,7 +61,6 @@ exports.viewCartByStatusAndName = async (req, res) => {
                     },
                     transaction,
                 });
-                const totalBill = calculateTotalBill(qualities);
 
                 const cartDetail = {
                     product_detail: qualities.map(quality => ({
@@ -77,21 +70,9 @@ exports.viewCartByStatusAndName = async (req, res) => {
                         product_cost: quality.product_cost,
                         quality: quality.quality,
                     })),
-                    total_bill: totalBill,
                 };
 
-                if (filter === "success") {
-                    const activeDiscount = await discount.findOne({
-                        where: {
-                            userId: user.id,
-                            isActive: false,
-                        },
-                        transaction,
-                    });
-                    cartDetail.discountUsed = activeDiscount !== null;
-                }
-
-                if (user) {
+                if (user_name) {
                     cartDetail.user_detail = user;
                 }
 
@@ -101,6 +82,7 @@ exports.viewCartByStatusAndName = async (req, res) => {
             detail = await Promise.all(cartProcessingPromises);
 
         } else if (filter) {
+
             carts = await Cart.findAll({
                 where: {
                     status: filter,
@@ -117,31 +99,17 @@ exports.viewCartByStatusAndName = async (req, res) => {
                     transaction,
                 });
 
-                const totalBill = calculateTotalBill(qualities);
-
                 const cartDetail = {
                     product_detail: qualities.map(quality => ({
                         status: quality.status,
                         product_image: quality.product_image,
                         product_name: quality.product_name,
                         product_cost: quality.product_cost,
-                        quality: quality.quality,
+                        quality: quality.quality
                     })),
-                    total_bill: totalBill,
                 };
 
-                if (filter === "success") {
-                    const activeDiscount = await discount.findOne({
-                        where: {
-                            userId: cart.user_id,
-                            isActive: false,
-                        },
-                        transaction,
-                    });
-                    cartDetail.discountUsed = activeDiscount !== null;
-                }
-
-                cartDetail.user_detail = await User.findByPk(cart.user_id, {
+                cartDetail.user_detail = await User.findByPk(cart.userId, {
                     attributes: ['avatar', 'username', 'email'],
                     transaction,
                 });
@@ -164,6 +132,7 @@ exports.viewCartByStatusAndName = async (req, res) => {
         }
 
         await transaction.commit();
+
         return res.status(200).send({
             detail: detail,
         });
@@ -193,7 +162,7 @@ exports.viewHistoryCart = async (req, res) => {
 
         const carts = await Cart.findAll({
             where: {
-                user_id: user.id,
+                userId: user.id,
                 status: filter,
             },
             transaction,
@@ -215,8 +184,6 @@ exports.viewHistoryCart = async (req, res) => {
                 transaction,
             });
 
-            const totalBill = calculateTotalBill(qualities);
-
             const cartDetail = {
                 product_detail: qualities.map(quality => ({
                     status: quality.status,
@@ -224,22 +191,10 @@ exports.viewHistoryCart = async (req, res) => {
                     product_name: quality.product_name,
                     product_cost: quality.product_cost,
                     quality: quality.quality,
-                })),
-                total_bill: totalBill,
+                }))
             };
 
-            if (filter === "success") {
-                const activeDiscount = await discount.findOne({
-                    where: {
-                        userId: cart.user_id,
-                        isActive: false,
-                    },
-                    transaction,
-                });
-                cartDetail.discountUsed = activeDiscount !== null;
-            }
-
-            cartDetail.user_detail = await User.findByPk(cart.user_id, {
+            cartDetail.user_detail = await User.findByPk(cart.userId, {
                 attributes: ['avatar', 'username', 'email'],
                 transaction,
             });
@@ -264,5 +219,4 @@ exports.viewHistoryCart = async (req, res) => {
         await transaction.rollback();
         return res.status(500).send({message: error.message});
     }
-
 }

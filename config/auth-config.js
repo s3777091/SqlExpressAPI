@@ -1,3 +1,3 @@
 module.exports = {
-    secret: "dathuynh-secret-key"
+    secret: "4d15mv2-13mca2cd-345saw2sx"
 };

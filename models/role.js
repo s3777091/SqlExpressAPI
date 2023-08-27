@@ -8,5 +8,7 @@ module.exports = (sequelize) => {
         name: {
             type: DataTypes.STRING
         }
+    }, {
+        timestamps: false, // Disable automatic timestamps
     });
 };

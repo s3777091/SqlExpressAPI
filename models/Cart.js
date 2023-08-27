@@ -9,7 +9,6 @@ module.exports = (sequelize) => {
         },
         deliveryFrom: {
             type: DataTypes.STRING(1024),
-            defaultValue: 'Kho Đà Nẵng'
         },
         deliveryTo: {
             type: DataTypes.STRING(1024),
@@ -21,5 +20,7 @@ module.exports = (sequelize) => {
                 fields: ['status_cart_idx']
             }]
         },
+    }, {
+        timestamps: false, // Disable automatic timestamps
     });
 };

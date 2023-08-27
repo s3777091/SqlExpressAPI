@@ -3,7 +3,8 @@ module.exports = (sequelize) => {
     return sequelize.define("categories", {
         id: {
             type: DataTypes.INTEGER,
-            primaryKey: true
+            primaryKey: true,
+            autoIncrement: true
         },
         image: {
             type: DataTypes.STRING
@@ -19,6 +20,14 @@ module.exports = (sequelize) => {
         },
         link: {
             type: DataTypes.STRING
+        },
+        expectedSpace: {
+            type: DataTypes.DOUBLE,
+        },
+        expectedQuality: {
+            type: DataTypes.DOUBLE,
         }
+    }, {
+        timestamps: false, // Disable automatic timestamps
     });
 };

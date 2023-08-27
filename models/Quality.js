@@ -17,7 +17,7 @@ module.exports = (sequelize) => {
                 fields: ['status_quality_idx']
             }]
         },
-        product_image:{
+        product_image: {
             type: DataTypes.STRING(1024)
         },
         product_name: {
@@ -27,9 +27,11 @@ module.exports = (sequelize) => {
             type: DataTypes.DOUBLE,
             defaultValue: 0.0
         },
-        quality:{
+        quality: {
             type: DataTypes.INTEGER,
             defaultValue: 0
         }
+    }, {
+        timestamps: false, // Disable automatic timestamps
     });
 };

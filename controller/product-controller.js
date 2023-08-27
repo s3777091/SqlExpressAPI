@@ -4,9 +4,11 @@ const db = require("../models");
 const Admin = db.admin;
 
 const { extractSpid } = require('../config/tool');
-const Pduct = db.product;
+const Product = db.product;
+const warehouse = db.warehouse;
 
 const Category = db.category;
+
 
 
 require("dotenv").config();
@@ -16,10 +18,12 @@ exports.createProduct = async (req, res) => {
     try {
         const idCode = req.body.code;
         const page = req.body.page;
+        const limit = req.body.limit;
+        const WH = req.body.id;
 
         const token = await Admin.findOne({
             where: {
-                link: 'https://www.youtube.com/watch?v=ECxVfrwwTp0'
+                link: process.env.VIDEO
             }
         });
 
@@ -41,7 +45,7 @@ exports.createProduct = async (req, res) => {
         }
 
         const response = await fetch(
-            `${process.env.TIKI_SLUG}?limit=40&aggregations=2&version=home-persionalized&trackity_id=${token.code}&category=${category.code}&page=${page}&urlKey=${category.slug}`,
+            `${process.env.TIKI_SLUG}?limit=${limit}&aggregations=2&version=home-persionalized&trackity_id=${token.code}&category=${category.code}&page=${page}&urlKey=${category.slug}`,
             {
                 method: "GET",
                 headers: {
@@ -56,9 +60,25 @@ exports.createProduct = async (req, res) => {
         const list = data.data;
 
         const addedProducts = await Promise.all(list.map(async (ne) => {
+            const requireSpace = category.expectedSpace * category.expectedQuality * limit;
+            const wareData = await warehouse.findOne({
+                where: {
+                    id: WH
+                },transaction
+            })
+
+            if(wareData.available === 0){
+                wareData.available = wareData.totalArea - requireSpace;
+                await wareData.save({ transaction });
+            } else {
+                wareData.available -= requireSpace;
+                await wareData.save({ transaction });
+            }
+
+
             const [existingProduct, created] = await db.product.findOrCreate({
                 where: {
-                    prname: ne.name,
+                    prName: ne.name,
                     cost: ne.price,
                     categoryId: category.id
                 },
@@ -67,23 +87,24 @@ exports.createProduct = async (req, res) => {
                     prLink: ne.url_path,
                     image: ne.thumbnail_url,
                     rate: ne.rating_average,
+                    brand: ne.brand_name,
                     discount: ne.discount,
-                    categoryId: category.id
+                    space: category.expectedSpace,
+                    amount: category.expectedQuality,
+                    categoryId: category.id,
+                    warehouseId: WH
                 },
                 transaction
             });
-
             return {
-                name: existingProduct.prname,
+                name: existingProduct.prName,
                 cost: existingProduct.cost,
                 added: created
             };
         }));
 
         const addedProductsCount = addedProducts.filter(result => result.added).length;
-
-        await transaction.commit(); // Commit the transaction
-
+        await transaction.commit();
         return res.status(200).send(
             addedProductsCount > 0
                 ? `Added ${addedProductsCount} new products to category ${category.name}`
@@ -95,11 +116,10 @@ exports.createProduct = async (req, res) => {
     }
 };
 
-
 exports.viewProduct = async (req, res) => {
     try {
         const productCode = req.query.prId;
-        const product = await Pduct.findOne({
+        const product = await Product.findOne({
             where: {
                 prId: productCode,
             },
@@ -144,7 +164,7 @@ exports.viewComment = async (req, res) => {
         const productCode = req.query.prId;
         const limit = req.query.limit;
 
-        const product = await Pduct.findOne({
+        const product = await Product.findOne({
             where: {
                 prId: productCode,
             },

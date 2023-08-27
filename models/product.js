@@ -7,7 +7,7 @@ module.exports = (sequelize) => {
             primaryKey: true,
             autoIncrement: true,
         },
-        prname: {
+        prName: {
             type: DataTypes.STRING(1024),
             indexes: [{
                 fields: ['product_name_idx']
@@ -16,6 +16,16 @@ module.exports = (sequelize) => {
         prId: {
             type: DataTypes.STRING,
         },
+        space: {
+            type: DataTypes.DOUBLE(10, 4),
+        },
+        amount: {
+            type: DataTypes.INTEGER
+        },
+        brand: {
+            type: DataTypes.STRING,
+            defaultValue: 'Samsung',
+        },
         prLink: {
             type: DataTypes.STRING(1024)
         },
@@ -23,13 +33,13 @@ module.exports = (sequelize) => {
             type: DataTypes.STRING(1024)
         },
         cost: {
-            type: DataTypes.DOUBLE
-        },
-        discount: {
-            type: DataTypes.DOUBLE
-        },
-        rate: {
-            type: DataTypes.DOUBLE
+            type: DataTypes.DOUBLE,
+            indexes: [{
+                fields: ['cost_idx']
+            }]
+
         }
+    }, {
+        timestamps: false,
     });
 };

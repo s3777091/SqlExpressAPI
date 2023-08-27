@@ -16,4 +16,6 @@ module.exports = function(app) {
 
     app.post("/api/add/code", [authJwt.verifyToken, authJwt.isAdmin], controller.addCode);
 
+    app.get("/api/view/top/selling", controller.topSelling);
+
 };
